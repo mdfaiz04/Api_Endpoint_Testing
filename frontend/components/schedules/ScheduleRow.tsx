@@ -19,6 +19,7 @@ export default function ScheduleRow({ schedule, onRefresh, onEdit }: Props) {
     } catch (error) {
       console.error("Failed to delete schedule", error);
       alert("Failed to delete schedule");
+    } finally {
       setIsProcessing(false);
     }
   };
@@ -34,6 +35,7 @@ export default function ScheduleRow({ schedule, onRefresh, onEdit }: Props) {
     } catch (error) {
       console.error("Failed to toggle schedule", error);
       alert("Failed to toggle schedule");
+    } finally {
       setIsProcessing(false);
     }
   };

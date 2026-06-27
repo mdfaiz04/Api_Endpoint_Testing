@@ -42,3 +42,33 @@ async def get_dashboard_stats():
 
 def get_recent_activities():
     return test_log_repository.get_recent_activities(5)
+
+
+def get_status_distribution():
+    from app.services.endpoint_summary_service import get_endpoint_summaries
+    summaries = get_endpoint_summaries()
+    
+    distribution = {
+        "healthy": 0,
+        "warning": 0,
+        "down": 0,
+        "unknown": 0
+    }
+    
+    for summary in summaries:
+        # Assuming summary is an object, access its attributes
+        status = summary.status
+        response_time = summary.response_time_ms
+        
+        if status == "PASS":
+            # Consider it a warning if response time is high (e.g., > 1000ms)
+            if response_time and response_time > 1000:
+                distribution["warning"] += 1
+            else:
+                distribution["healthy"] += 1
+        elif status == "FAIL":
+            distribution["down"] += 1
+        else:
+            distribution["unknown"] += 1
+            
+    return distribution

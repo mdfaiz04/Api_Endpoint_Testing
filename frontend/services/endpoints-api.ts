@@ -18,3 +18,7 @@ export async function deleteEndpoint(name: string): Promise<void> {
 export async function updateEndpoint(name: string, endpoint: ApiEndpoint): Promise<void> {
   await axios.put(`${API_BASE_URL}/api-endpoints/${encodeURIComponent(name)}`, endpoint);
 }
+
+export async function createEndpoint(endpoint: ApiEndpoint): Promise<void> {
+  await axios.post(`${API_BASE_URL}/api-endpoints`, endpoint);
+}

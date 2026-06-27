@@ -83,3 +83,4 @@ def get_recent_activities(limit: int = 5):
             "tested_at": log["tested_at"].isoformat() if hasattr(log["tested_at"], "isoformat") else str(log["tested_at"])
         })
     return activities
+

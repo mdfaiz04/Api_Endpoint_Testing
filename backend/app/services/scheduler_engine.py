@@ -37,29 +37,41 @@ async def execute_schedule(config: dict):
     
     logger.info(f"Executing schedule: {name}")
     
-    endpoints_to_run = []
-    
-    if target_type == "API":
-        endpoints_to_run.append(target_name)
-    elif target_type == "GROUP":
+    if target_type == "REPORT":
         try:
-            group = get_api_group(target_name)
-            if group and "apis" in group:
-                endpoints_to_run.extend(group["apis"])
-        except Exception as e:
-            logger.error(f"Error loading group {target_name}: {e}")
+            from app.services.health_report_service import generate_health_report
             
-    all_endpoints = get_all_endpoints()
-    
-    for ep_name in endpoints_to_run:
-        try:
-            endpoint = next((ep for ep in all_endpoints if ep["name"] == ep_name), None)
-            if endpoint:
-                await run_manual_test(endpoint)
-            else:
-                logger.warning(f"Endpoint '{ep_name}' not found for schedule '{name}'")
+            logger.info(f"Generating health report for schedule {name}...")
+            generate_health_report()
+            
+            logger.info(f"Successfully executed health report schedule {name}")
         except Exception as e:
-            logger.error(f"Error running test for {ep_name}: {e}")
+            logger.error(f"Error executing health report schedule {name}: {e}")
+    else:
+        endpoints_to_run = []
+        
+        if target_type == "API":
+            endpoints_to_run.append(target_name)
+        elif target_type == "GROUP":
+            try:
+                group = get_api_group(target_name)
+                if group and "apis" in group:
+                    endpoints_to_run.extend(group["apis"])
+            except Exception as e:
+                logger.error(f"Error loading group {target_name}: {e}")
+                
+        all_endpoints = get_all_endpoints()
+        
+        for ep_name in endpoints_to_run:
+            try:
+                endpoint = next((ep for ep in all_endpoints if ep["name"] == ep_name), None)
+                if endpoint:
+                    await run_manual_test(endpoint)
+                else:
+                    logger.warning(f"Endpoint '{ep_name}' not found for schedule '{name}'")
+            except Exception as e:
+                logger.error(f"Error running test for {ep_name}: {e}")
+
             
     now = datetime.now(pytz.utc)
     next_run = now + timedelta(seconds=interval)

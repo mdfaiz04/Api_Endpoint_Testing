@@ -3,9 +3,12 @@ import { EndpointSummary } from "@/types/endpoint-summary";
 import { deleteEndpoint } from "@/services/endpoints-api";
 import axios from "axios";
 
+import { ToastData } from "@/app/dashboard/page";
+
 interface Props {
   summary: EndpointSummary;
   onRefresh?: () => void;
+  showNotification?: (data: ToastData) => void;
   onEdit?: () => void;
   onTrend?: () => void;
   onHistory?: () => void;
@@ -30,19 +33,37 @@ function formatLastTested(dateStr: string | null): string {
   return date.toLocaleString();
 }
 
-export default function EndpointRow({ summary, onRefresh, onEdit, onTrend, onHistory }: Props) {
+export default function EndpointRow({ summary, onRefresh, showNotification, onEdit, onTrend, onHistory }: Props) {
   const [isTesting, setIsTesting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleTest = async () => {
     try {
       setIsTesting(true);
-      await axios.get(`http://127.0.0.1:8000/manual-test?name=${encodeURIComponent(summary.name)}`);
-      alert("Test completed");
+      const start = performance.now();
+      const response = await axios.get(`http://127.0.0.1:8000/manual-test?name=${encodeURIComponent(summary.name)}`);
+      const end = performance.now();
+      
+      if (showNotification) {
+        showNotification({
+          title: "Test execution completed",
+          lines: [
+            `${summary.name} tested`,
+            `Duration: ${((end - start) / 1000).toFixed(2)} seconds`
+          ],
+          type: response.data.passed ? "success" : "failure"
+        });
+      }
       if (onRefresh) onRefresh();
     } catch (error) {
       console.error("Test failed", error);
-      alert("Test failed");
+      if (showNotification) {
+        showNotification({
+          title: "Unable to execute test",
+          lines: ["Please try again."],
+          type: "failure"
+        });
+      }
     } finally {
       setIsTesting(false);
     }
@@ -53,10 +74,23 @@ export default function EndpointRow({ summary, onRefresh, onEdit, onTrend, onHis
       try {
         setIsDeleting(true);
         await deleteEndpoint(summary.name);
+        if (showNotification) {
+          showNotification({
+            title: "Endpoint deleted successfully",
+            lines: [],
+            type: "success"
+          });
+        }
         if (onRefresh) onRefresh();
       } catch (error) {
         console.error("Delete failed", error);
-        alert("Delete failed");
+        if (showNotification) {
+          showNotification({
+            title: "Delete failed",
+            lines: ["Unable to delete endpoint."],
+            type: "failure"
+          });
+        }
       } finally {
         setIsDeleting(false);
       }

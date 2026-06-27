@@ -10,3 +10,12 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
   return response.data;
 }
+
+
+export async function getStatusDistribution(): Promise<{healthy: number, warning: number, down: number, unknown: number}> {
+  const response = await axios.get(
+    `${API_BASE_URL}/status-distribution`
+  );
+
+  return response.data;
+}
