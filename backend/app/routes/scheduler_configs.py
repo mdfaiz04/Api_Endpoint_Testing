@@ -2,8 +2,15 @@ from fastapi import APIRouter, HTTPException
 from typing import List
 from app.schemas.scheduler_config import SchedulerConfig, SchedulerConfigCreate
 from app.services import scheduler_config_service
+from app.services.scheduler_engine import get_scheduler
 
 router = APIRouter()
+
+@router.get("/scheduler-jobs-debug")
+def get_scheduler_jobs():
+    scheduler = get_scheduler()
+    jobs = scheduler.get_jobs()
+    return [{"id": job.id, "next_run_time": str(job.next_run_time)} for job in jobs]
 
 @router.get("/scheduler-configs", response_model=List[SchedulerConfig])
 def get_scheduler_configs():

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ApiEndpoint } from "../types/api-endpoint";
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://127.0.0.1:8000";
 
 export async function getEndpoints(): Promise<ApiEndpoint[]> {
   const response = await axios.get(

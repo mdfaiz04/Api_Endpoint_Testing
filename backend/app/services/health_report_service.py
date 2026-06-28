@@ -101,7 +101,9 @@ def generate_health_report() -> tuple[str, str]:
     Returns: 
         (subject, html_content)
     """
+    logger.info("[DEBUG] generate_health_report() entered")
     summaries = get_endpoint_summaries()
+    logger.info(f"[DEBUG] loaded {len(summaries)} endpoint summaries")
     
     total_apis = len(summaries)
     healthy_apis = 0
@@ -140,6 +142,7 @@ def generate_health_report() -> tuple[str, str]:
     )
     
     active_users = get_active_notification_users()
+    logger.info(f"[DEBUG] recipient count: {len(active_users) if active_users else 0}")
     if active_users:
         print(f"\nFound {len(active_users)} active users.\n")
         print("Sending health report to:")
@@ -152,14 +155,16 @@ def generate_health_report() -> tuple[str, str]:
             if not recipient:
                 continue
             try:
+                logger.info(f"[DEBUG] sending email to recipient: {recipient}")
                 send_email_via_resend(
                     to_address=recipient,
                     subject=subject,
                     html_content=html
                 )
             except Exception as e:
-                logger.error(f"Failed to send health report to {recipient}: {e}")
+                logger.error(f"Failed to send health report to {recipient}: {e}", exc_info=True)
     else:
         logger.info("No active notification users found for health report.")
     
+    logger.info("[DEBUG] generate_health_report() completion")
     return subject, html

@@ -31,10 +31,10 @@ def send_email_via_resend(to_address: str, subject: str, html_content: str):
             "subject": subject,
             "html": html_content
         })
-        logger.info(f"Email sent successfully! Resend Response ID: {response.get('id', 'unknown')}")
+        logger.info(f"[DEBUG] Resend response: {response}")
         return response
     except Exception as e:
-        logger.error(f"Failed to send email via Resend: {e}", exc_info=True)
+        logger.error(f"[DEBUG] Failed to send email via Resend: {e}", exc_info=True)
         return None
 
 def verify_resend_configuration():

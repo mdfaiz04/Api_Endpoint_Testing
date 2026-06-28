@@ -59,8 +59,10 @@ export default function ScheduleRow({ schedule, onRefresh, onEdit }: Props) {
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex flex-col">
-          <span className="text-xs text-zinc-500 uppercase font-semibold">{schedule.target_type}</span>
-          <span className="text-sm text-zinc-700 dark:text-zinc-300 font-medium">{schedule.target_name}</span>
+          <span className="text-xs text-zinc-500 uppercase font-semibold">
+            {schedule.target_type === "REPORT" ? "System Health Report" : schedule.target_type}
+          </span>
+          <span className="text-sm text-zinc-700 dark:text-zinc-300 font-medium">{schedule.target_type === "REPORT" ? "" : schedule.target_name}</span>
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">

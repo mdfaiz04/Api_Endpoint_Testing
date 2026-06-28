@@ -14,7 +14,7 @@ interface Props {
 
 export default function ScheduleModal({ isOpen, onClose, onRefresh, editData }: Props) {
   const [name, setName] = useState("");
-  const [targetType, setTargetType] = useState<"API" | "GROUP">("API");
+  const [targetType, setTargetType] = useState<"API" | "GROUP" | "REPORT">("API");
   const [targetName, setTargetName] = useState("");
   const [intervalPreset, setIntervalPreset] = useState("60"); // default 1 min
   const [customInterval, setCustomInterval] = useState("");
@@ -85,9 +85,12 @@ export default function ScheduleModal({ isOpen, onClose, onRefresh, editData }: 
       }
       onRefresh();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save schedule", error);
-      alert("Failed to save schedule. Name might already exist.");
+      const errorMsg = error.response?.data?.detail 
+        ? (Array.isArray(error.response.data.detail) ? JSON.stringify(error.response.data.detail) : error.response.data.detail)
+        : "Failed to save schedule. Name might already exist.";
+      alert(`Error: ${errorMsg}`);
     } finally {
       setIsSaving(false);
     }
@@ -126,28 +129,36 @@ export default function ScheduleModal({ isOpen, onClose, onRefresh, editData }: 
               <select 
                 value={targetType}
                 onChange={e => {
-                  setTargetType(e.target.value as "API" | "GROUP");
-                  setTargetName("");
+                  const newType = e.target.value as "API" | "GROUP" | "REPORT";
+                  setTargetType(newType);
+                  if (newType === "REPORT") {
+                    setTargetName("Automated Health Report");
+                  } else {
+                    setTargetName("");
+                  }
                 }}
                 className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:border-indigo-500 transition-colors"
               >
                 <option value="API">Single API</option>
                 <option value="GROUP">API Group</option>
+                <option value="REPORT">System Health Report</option>
               </select>
             </div>
-            <div className="flex-1">
-              <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Target</label>
-              <select 
-                value={targetName}
-                onChange={e => setTargetName(e.target.value)}
-                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:border-indigo-500 transition-colors"
-              >
-                <option value="">Select Target...</option>
-                {currentTargets.map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
+            {targetType !== "REPORT" && (
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Target</label>
+                <select 
+                  value={targetName}
+                  onChange={e => setTargetName(e.target.value)}
+                  className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="">Select Target...</option>
+                  {currentTargets.map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <div>
