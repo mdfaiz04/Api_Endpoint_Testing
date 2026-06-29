@@ -36,7 +36,7 @@ def build_health_report_html(
         failed_rows = """
         <tr>
             <td colspan="2" style="padding: 12px; border-bottom: 1px solid #eee; text-align: center; color: #5cb85c; font-weight: bold;">
-                🎉 All Monitored APIs are Operational!
+                All Monitored APIs are Operational!
             </td>
         </tr>
         """
