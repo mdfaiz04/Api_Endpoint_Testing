@@ -7,8 +7,6 @@ import Header from "@/components/layout/Header";
 import StatsCard from "@/components/dashboard/cards/StatsCard";
 import SchedulerStatusCard from "@/components/dashboard/right-panel/SchedulerStatusCard";
 import ActivityFeedCard from "@/components/dashboard/right-panel/ActivityFeedCard";
-import ApiGroupsSummaryCard from "@/components/dashboard/right-panel/ApiGroupsSummaryCard";
-import RecentResultCard, { LastExecutionResult } from "@/components/dashboard/right-panel/RecentResultCard";
 import EndpointModal from "@/components/dashboard/table/EndpointModal";
 import { ApiEndpoint } from "@/types/api-endpoint";
 import { createEndpoint } from "@/services/endpoints-api";
@@ -25,7 +23,6 @@ export default function DashboardPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [toast, setToast] = useState<ToastData | null>(null);
-  const [lastExecutionResult, setLastExecutionResult] = useState<LastExecutionResult | null>(null);
   const [batchActivityLogs, setBatchActivityLogs] = useState<any[]>([]);
 
   const triggerRefresh = () => {
@@ -165,17 +162,14 @@ export default function DashboardPage() {
                 refreshKey={refreshKey} 
                 triggerRefresh={triggerRefresh} 
                 showNotification={showNotification}
-                setLastExecutionResult={setLastExecutionResult}
                 addBatchActivityLog={(log) => setBatchActivityLogs(prev => [log, ...prev])}
               />
             </div>
 
             {/* Right Panel Stack */}
             <div className="flex flex-col gap-6 w-full md:w-auto">
-              <RecentResultCard result={lastExecutionResult} />
               <SchedulerStatusCard />
               <ActivityFeedCard refreshKey={refreshKey} batchLogs={batchActivityLogs} />
-              <ApiGroupsSummaryCard refreshKey={refreshKey} />
             </div>
           </div>
 

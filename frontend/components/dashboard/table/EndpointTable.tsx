@@ -6,7 +6,6 @@ import { getEndpointSummaries } from "@/services/endpoint-summary-api";
 import { getEndpoints, updateEndpoint } from "@/services/endpoints-api";
 import { ApiEndpoint } from "@/types/api-endpoint";
 import { ToastData } from "@/app/dashboard/page";
-import { LastExecutionResult } from "@/components/dashboard/right-panel/RecentResultCard";
 import EndpointRow from "./EndpointRow";
 import EndpointModal from "./EndpointModal";
 import TrendModal from "./TrendModal";
@@ -17,7 +16,6 @@ interface Props {
   refreshKey?: number;
   triggerRefresh?: () => void;
   showNotification?: (data: ToastData) => void;
-  setLastExecutionResult?: (data: LastExecutionResult | null) => void;
   addBatchActivityLog?: (log: any) => void;
 }
 
@@ -27,7 +25,6 @@ export default function EndpointTable({
   refreshKey = 0, 
   triggerRefresh, 
   showNotification,
-  setLastExecutionResult,
   addBatchActivityLog
 }: Props) {
   const [summaries, setSummaries] = useState<EndpointSummary[]>([]);
@@ -61,16 +58,6 @@ export default function EndpointTable({
     const failed = totalTested - passed;
     const isSuccess = failed === 0;
 
-    const resultData: LastExecutionResult = {
-      timestamp: new Date().toLocaleString(),
-      totalTested,
-      passed,
-      failed,
-      executionTime: duration,
-      status: isSuccess ? "Success" : "Completed with Failures"
-    };
-
-    if (setLastExecutionResult) setLastExecutionResult(resultData);
     if (addBatchActivityLog) addBatchActivityLog({
       isBatch: true,
       timestamp: new Date().toISOString(),
@@ -94,16 +81,6 @@ export default function EndpointTable({
   };
 
   const handleBatchError = () => {
-    if (setLastExecutionResult) {
-      setLastExecutionResult({
-        timestamp: new Date().toLocaleString(),
-        totalTested: 0,
-        passed: 0,
-        failed: 0,
-        executionTime: 0,
-        status: "Execution Failed"
-      });
-    }
     if (showNotification) {
       showNotification({
         title: "Unable to execute tests",
