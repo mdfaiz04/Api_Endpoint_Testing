@@ -2,16 +2,19 @@
 
 import { FaBars, FaMoon, FaSun, FaBell, FaChevronDown } from "react-icons/fa";
 import { useTheme } from "@/components/ThemeProvider";
+import { useSidebar } from "@/components/SidebarContext";
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme();
+  const { toggleSidebar } = useSidebar();
 
   return (
     <header className="sticky top-0 z-50 h-[70px] border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex items-center justify-between px-6 transition-colors">
       {/* Left side: Hamburger menu */}
       <div className="flex items-center">
         <button 
-          className="text-zinc-400 hover:text-zinc-100 p-2 rounded-lg transition-colors cursor-pointer"
+          onClick={toggleSidebar}
+          className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 p-2 rounded-lg transition-colors cursor-pointer"
           aria-label="Toggle Sidebar"
         >
           <FaBars size={20} />

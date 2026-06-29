@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.services.dashboard_service import get_dashboard_stats, get_recent_activities, get_status_distribution
+from app.services.dashboard_service import get_dashboard_stats, get_recent_activities
 
 router = APIRouter()
 
@@ -11,8 +11,3 @@ async def dashboard_stats():
 @router.get("/recent-activities")
 def recent_activities():
     return get_recent_activities()
-
-
-@router.get("/status-distribution")
-def status_distribution():
-    return get_status_distribution()
