@@ -3,7 +3,9 @@ import axios from "axios";
 export interface SchedulerConfig {
   name: string;
   enabled: boolean;
-  interval_seconds: number;
+  interval_seconds?: number;
+  interval_value?: number;
+  interval_unit?: "seconds" | "minutes" | "hours" | "days";
   target_type: "API" | "GROUP" | "REPORT";
   target_name: string;
   last_run?: string;

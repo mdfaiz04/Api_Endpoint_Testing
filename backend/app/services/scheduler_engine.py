@@ -81,7 +81,15 @@ async def execute_schedule(config: dict):
 
             
     now = datetime.now(pytz.utc)
-    next_run = now + timedelta(seconds=interval)
+    interval_val = config.get("interval_value")
+    interval_unit = config.get("interval_unit")
+    
+    if interval_val and interval_unit:
+        delta_kwargs = {interval_unit: interval_val}
+        next_run = now + timedelta(**delta_kwargs)
+    else:
+        interval_seconds = config.get("interval_seconds") or 60
+        next_run = now + timedelta(seconds=interval_seconds)
     
     try:
         scheduler_configs_collection.update_one(
@@ -111,15 +119,22 @@ def load_scheduler_jobs():
         logger.info(f"Discovered schedule: {config.get('name')}")
         if config.get("enabled"):
             job_id = config.get("name")
-            interval = config.get("interval_seconds", 60)
+            interval_val = config.get("interval_value")
+            interval_unit = config.get("interval_unit")
+            
+            if interval_val and interval_unit:
+                trigger_kwargs = {interval_unit: interval_val}
+            else:
+                interval_seconds = config.get("interval_seconds") or 60
+                trigger_kwargs = {"seconds": interval_seconds}
             
             scheduler.add_job(
                 func=execute_schedule_sync,
                 trigger="interval",
                 args=[config],
-                seconds=interval,
                 id=job_id,
-                replace_existing=True
+                replace_existing=True,
+                **trigger_kwargs
             )
             logger.info(f"Added job: {job_id}")
             count += 1
