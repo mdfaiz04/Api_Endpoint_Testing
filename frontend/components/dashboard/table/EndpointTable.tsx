@@ -5,6 +5,7 @@ import { EndpointSummary } from "@/types/endpoint-summary";
 import { getEndpointSummaries } from "@/services/endpoint-summary-api";
 import { getEndpoints, updateEndpoint } from "@/services/endpoints-api";
 import { ApiEndpoint } from "@/types/api-endpoint";
+import { ToastData } from "@/app/dashboard/page";
 import EndpointRow from "./EndpointRow";
 import EndpointModal from "./EndpointModal";
 import TrendModal from "./TrendModal";
@@ -14,11 +15,18 @@ import axios from "axios";
 interface Props {
   refreshKey?: number;
   triggerRefresh?: () => void;
+  showNotification?: (data: ToastData) => void;
+  addBatchActivityLog?: (log: any) => void;
 }
 
 type FilterType = "ALL" | "PASS" | "FAIL";
 
-export default function EndpointTable({ refreshKey = 0, triggerRefresh }: Props) {
+export default function EndpointTable({ 
+  refreshKey = 0, 
+  triggerRefresh, 
+  showNotification,
+  addBatchActivityLog
+}: Props) {
   const [summaries, setSummaries] = useState<EndpointSummary[]>([]);
   const [filter, setFilter] = useState<FilterType>("ALL");
   const [isRunningAll, setIsRunningAll] = useState(false);
@@ -44,15 +52,57 @@ export default function EndpointTable({ refreshKey = 0, triggerRefresh }: Props)
     loadSummaries();
   }, [refreshKey]);
 
+  const processBatchResults = (results: any[], duration: number) => {
+    const totalTested = results.length;
+    const passed = results.filter(r => r.passed).length;
+    const failed = totalTested - passed;
+    const isSuccess = failed === 0;
+
+    if (addBatchActivityLog) addBatchActivityLog({
+      isBatch: true,
+      timestamp: new Date().toISOString(),
+      totalTested,
+      passed,
+      failed
+    });
+
+    if (showNotification) {
+      showNotification({
+        title: "Test execution completed",
+        lines: [
+          `${totalTested} APIs tested`,
+          `${passed} Passed`,
+          `${failed} Failed`,
+          `Duration: ${duration.toFixed(2)} seconds`
+        ],
+        type: isSuccess ? "success" : "partial"
+      });
+    }
+  };
+
+  const handleBatchError = () => {
+    if (showNotification) {
+      showNotification({
+        title: "Unable to execute tests",
+        lines: ["Please try again."],
+        type: "failure"
+      });
+    }
+  };
+
   const handleRunAll = async () => {
     try {
       setIsRunningAll(true);
-      await axios.get("http://127.0.0.1:8000/manual-test-all");
-      alert("All tests completed");
+      const start = performance.now();
+      const response = await axios.get("http://127.0.0.1:8000/manual-test-all");
+      const end = performance.now();
+      
+      processBatchResults(response.data, (end - start) / 1000);
+      
       if (triggerRefresh) triggerRefresh();
     } catch (error) {
       console.error("Run all failed", error);
-      alert("Run all failed");
+      handleBatchError();
     } finally {
       setIsRunningAll(false);
     }
@@ -61,12 +111,16 @@ export default function EndpointTable({ refreshKey = 0, triggerRefresh }: Props)
   const handleRunFailed = async () => {
     try {
       setIsRunningFailed(true);
-      await axios.get("http://127.0.0.1:8000/manual-test-failed");
-      alert("Failed tests completed");
+      const start = performance.now();
+      const response = await axios.get("http://127.0.0.1:8000/manual-test-failed");
+      const end = performance.now();
+
+      processBatchResults(response.data, (end - start) / 1000);
+
       if (triggerRefresh) triggerRefresh();
     } catch (error) {
       console.error("Run failed tests failed", error);
-      alert("Run failed tests failed");
+      handleBatchError();
     } finally {
       setIsRunningFailed(false);
     }
@@ -81,11 +135,23 @@ export default function EndpointTable({ refreshKey = 0, triggerRefresh }: Props)
         setEditingSummaryName(summary.name);
         setIsEditModalOpen(true);
       } else {
-        alert("Endpoint details not found");
+        if (showNotification) {
+          showNotification({
+            title: "Endpoint details not found",
+            lines: [],
+            type: "failure"
+          });
+        }
       }
     } catch (error) {
       console.error("Failed to fetch endpoint details", error);
-      alert("Failed to fetch details");
+      if (showNotification) {
+        showNotification({
+          title: "Failed to fetch details",
+          lines: [],
+          type: "failure"
+        });
+      }
     }
   };
 
@@ -176,6 +242,7 @@ export default function EndpointTable({ refreshKey = 0, triggerRefresh }: Props)
               key={index}
               summary={summary}
               onRefresh={triggerRefresh}
+              showNotification={showNotification}
               onEdit={() => handleEditClick(summary)}
               onTrend={() => handleTrendClick(summary)}
               onHistory={() => handleHistoryClick(summary)}

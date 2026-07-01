@@ -3,6 +3,7 @@ import httpx
 from datetime import datetime
 from app.services.test_log_service import add_test_log
 from app.services.response_validator_service import validate_response
+from app.services.notification_service import process_test_result_for_notification
 
 
 async def run_manual_test(endpoint: dict):
@@ -37,6 +38,18 @@ async def run_manual_test(endpoint: dict):
         actual_response=response_json,
         expected_response=endpoint.get("expected_response")
     )
+
+    if not validation_result.get("passed"):
+        try:
+            process_test_result_for_notification(
+                endpoint=endpoint,
+                validation_result=validation_result,
+                response_time_ms=response_time_ms,
+                response_status_code=response.status_code
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error in notification service: {e}")
 
     add_test_log({
         "api_name": endpoint["name"],

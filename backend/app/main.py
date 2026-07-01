@@ -10,6 +10,7 @@ from app.routes import dashboard
 from app.routes import endpoint_summary
 from app.routes import api_groups
 from app.routes import scheduler_configs
+from app.routes import notification_recipients
 
 
 @asynccontextmanager
@@ -52,3 +53,4 @@ app.include_router(dashboard.router)
 app.include_router(endpoint_summary.router)
 app.include_router(api_groups.router)
 app.include_router(scheduler_configs.router)
+app.include_router(notification_recipients.router)

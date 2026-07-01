@@ -12,10 +12,18 @@ def create_scheduler_config(config: SchedulerConfigCreate):
     if existing:
         raise ValueError("Scheduler Configuration with this name already exists")
     scheduler_config_repository.add_scheduler_config(config)
+    from app.services.scheduler_engine import load_scheduler_jobs
+    load_scheduler_jobs()
     return True
 
 def update_scheduler_config(name: str, config: SchedulerConfigCreate):
-    return scheduler_config_repository.update_scheduler_config(name, config)
+    result = scheduler_config_repository.update_scheduler_config(name, config)
+    from app.services.scheduler_engine import load_scheduler_jobs
+    load_scheduler_jobs()
+    return result
 
 def delete_scheduler_config(name: str):
-    return scheduler_config_repository.delete_scheduler_config(name)
+    result = scheduler_config_repository.delete_scheduler_config(name)
+    from app.services.scheduler_engine import load_scheduler_jobs
+    load_scheduler_jobs()
+    return result

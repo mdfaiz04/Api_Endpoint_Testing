@@ -42,3 +42,4 @@ async def get_dashboard_stats():
 
 def get_recent_activities():
     return test_log_repository.get_recent_activities(5)
+

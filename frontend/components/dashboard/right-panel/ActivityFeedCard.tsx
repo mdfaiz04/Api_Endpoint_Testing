@@ -15,9 +15,10 @@ interface RecentActivity {
 
 interface Props {
   refreshKey?: number;
+  batchLogs?: any[];
 }
 
-export default function ActivityFeedCard({ refreshKey = 0 }: Props) {
+export default function ActivityFeedCard({ refreshKey = 0, batchLogs = [] }: Props) {
   const [logs, setLogs] = useState<RecentActivity[]>([]);
 
   useEffect(() => {
@@ -61,6 +62,9 @@ export default function ActivityFeedCard({ refreshKey = 0 }: Props) {
     }
   };
 
+  // Combine batch logs and normal logs
+  const combinedLogs = [...batchLogs, ...logs];
+
   return (
     <div className="w-full md:w-[350px] shrink-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-xl space-y-4 transition-colors">
       {/* Title */}
@@ -73,14 +77,42 @@ export default function ActivityFeedCard({ refreshKey = 0 }: Props) {
 
       {/* Activity List */}
       <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
-        {logs.length === 0 ? (
+        {combinedLogs.length === 0 ? (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">No recent activity</p>
         ) : (
-          logs.map((log, idx) => {
+          combinedLogs.map((log, idx) => {
+            if (log.isBatch) {
+              return (
+                <div 
+                  key={`batch-${idx}`} 
+                  className="flex gap-3 items-start p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/30 transition-colors border border-zinc-100 dark:border-zinc-800 group"
+                >
+                  {log.failed === 0 ? (
+                    <FaCheckCircle className="text-emerald-500 shrink-0 mt-0.5" size={14} />
+                  ) : (
+                    <FaExclamationTriangle className="text-amber-500 shrink-0 mt-0.5" size={14} />
+                  )}
+                  <div className="space-y-1.5 w-full">
+                    <p className={`text-sm font-bold leading-tight ${log.failed === 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                      {log.failed === 0 ? 'Manual test completed' : 'Manual test completed with failures'}
+                    </p>
+                    <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-0.5">
+                      <p>{log.totalTested} APIs tested</p>
+                      <p>{log.passed} Passed</p>
+                      <p>{log.failed} Failed</p>
+                    </div>
+                    <p className="text-[10px] text-zinc-400 font-medium pt-1">
+                      {timeAgo(log.timestamp)}
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+
             const status = getStatus(log);
             return (
               <div 
-                key={idx} 
+                key={`log-${idx}`} 
                 className="flex gap-3 items-start p-3 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 group"
               >
                 {renderIcon(status)}

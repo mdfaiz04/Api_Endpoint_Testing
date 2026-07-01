@@ -14,10 +14,11 @@ interface Props {
 
 export default function ScheduleModal({ isOpen, onClose, onRefresh, editData }: Props) {
   const [name, setName] = useState("");
-  const [targetType, setTargetType] = useState<"API" | "GROUP">("API");
+  const [targetType, setTargetType] = useState<"API" | "GROUP" | "REPORT">("API");
   const [targetName, setTargetName] = useState("");
   const [intervalPreset, setIntervalPreset] = useState("60"); // default 1 min
-  const [customInterval, setCustomInterval] = useState("");
+  const [intervalValue, setIntervalValue] = useState("");
+  const [intervalUnit, setIntervalUnit] = useState<"seconds" | "minutes" | "hours" | "days">("minutes");
   const [enabled, setEnabled] = useState(true);
   
   const [availableApis, setAvailableApis] = useState<string[]>([]);
@@ -35,20 +36,29 @@ export default function ScheduleModal({ isOpen, onClose, onRefresh, editData }: 
         setTargetName(editData.target_name);
         setEnabled(editData.enabled);
 
-        const intv = editData.interval_seconds.toString();
-        if (["15", "30", "60", "300"].includes(intv)) {
-          setIntervalPreset(intv);
-          setCustomInterval("");
-        } else {
+        if (editData.interval_value && editData.interval_unit) {
           setIntervalPreset("custom");
-          setCustomInterval(intv);
+          setIntervalValue(editData.interval_value.toString());
+          setIntervalUnit(editData.interval_unit);
+        } else if (editData.interval_seconds) {
+          const intv = editData.interval_seconds.toString();
+          if (["15", "30", "60", "300"].includes(intv)) {
+            setIntervalPreset(intv);
+            setIntervalValue("");
+            setIntervalUnit("minutes");
+          } else {
+            setIntervalPreset("custom");
+            setIntervalValue(intv);
+            setIntervalUnit("seconds");
+          }
         }
       } else {
         setName("");
         setTargetType("API");
         setTargetName("");
         setIntervalPreset("60");
-        setCustomInterval("");
+        setIntervalValue("");
+        setIntervalUnit("minutes");
         setEnabled(true);
       }
     }
@@ -59,25 +69,27 @@ export default function ScheduleModal({ isOpen, onClose, onRefresh, editData }: 
   const handleSave = async () => {
     if (!name || !targetName) return;
     
-    let intervalSeconds = parseInt(intervalPreset);
+    const payload: SchedulerConfig = {
+      name,
+      target_type: targetType,
+      target_name: targetName,
+      enabled,
+    };
+
     if (intervalPreset === "custom") {
-      intervalSeconds = parseInt(customInterval);
-      if (isNaN(intervalSeconds) || intervalSeconds <= 0) {
-        alert("Please enter a valid interval in seconds.");
+      const val = parseInt(intervalValue);
+      if (isNaN(val) || val <= 0) {
+        alert("Please enter a valid interval value (>0).");
         return;
       }
+      payload.interval_value = val;
+      payload.interval_unit = intervalUnit;
+    } else {
+      payload.interval_seconds = parseInt(intervalPreset);
     }
 
     setIsSaving(true);
     try {
-      const payload: SchedulerConfig = {
-        name,
-        target_type: targetType,
-        target_name: targetName,
-        interval_seconds: intervalSeconds,
-        enabled,
-      };
-
       if (editData) {
         await updateSchedulerConfig(editData.name, payload);
       } else {
@@ -85,9 +97,12 @@ export default function ScheduleModal({ isOpen, onClose, onRefresh, editData }: 
       }
       onRefresh();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save schedule", error);
-      alert("Failed to save schedule. Name might already exist.");
+      const errorMsg = error.response?.data?.detail 
+        ? (Array.isArray(error.response.data.detail) ? JSON.stringify(error.response.data.detail) : error.response.data.detail)
+        : "Failed to save schedule. Name might already exist.";
+      alert(`Error: ${errorMsg}`);
     } finally {
       setIsSaving(false);
     }
@@ -126,28 +141,36 @@ export default function ScheduleModal({ isOpen, onClose, onRefresh, editData }: 
               <select 
                 value={targetType}
                 onChange={e => {
-                  setTargetType(e.target.value as "API" | "GROUP");
-                  setTargetName("");
+                  const newType = e.target.value as "API" | "GROUP" | "REPORT";
+                  setTargetType(newType);
+                  if (newType === "REPORT") {
+                    setTargetName("Automated Health Report");
+                  } else {
+                    setTargetName("");
+                  }
                 }}
                 className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:border-indigo-500 transition-colors"
               >
                 <option value="API">Single API</option>
                 <option value="GROUP">API Group</option>
+                <option value="REPORT">System Health Report</option>
               </select>
             </div>
-            <div className="flex-1">
-              <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Target</label>
-              <select 
-                value={targetName}
-                onChange={e => setTargetName(e.target.value)}
-                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:border-indigo-500 transition-colors"
-              >
-                <option value="">Select Target...</option>
-                {currentTargets.map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
+            {targetType !== "REPORT" && (
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Target</label>
+                <select 
+                  value={targetName}
+                  onChange={e => setTargetName(e.target.value)}
+                  className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="">Select Target...</option>
+                  {currentTargets.map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <div>
@@ -162,16 +185,28 @@ export default function ScheduleModal({ isOpen, onClose, onRefresh, editData }: 
                 <option value="30">30 Seconds</option>
                 <option value="60">1 Minute</option>
                 <option value="300">5 Minutes</option>
-                <option value="custom">Custom (Seconds)</option>
+                <option value="custom">Custom Interval</option>
               </select>
               {intervalPreset === "custom" && (
-                <input 
-                  type="number"
-                  value={customInterval}
-                  onChange={e => setCustomInterval(e.target.value)}
-                  className="flex-1 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:border-indigo-500 transition-colors"
-                  placeholder="e.g. 120"
-                />
+                <div className="flex flex-1 gap-2">
+                  <input 
+                    type="number"
+                    value={intervalValue}
+                    onChange={e => setIntervalValue(e.target.value)}
+                    className="w-20 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:border-indigo-500 transition-colors"
+                    placeholder="Val"
+                  />
+                  <select
+                    value={intervalUnit}
+                    onChange={e => setIntervalUnit(e.target.value as any)}
+                    className="flex-1 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:border-indigo-500 transition-colors"
+                  >
+                    <option value="seconds">Seconds</option>
+                    <option value="minutes">Minutes</option>
+                    <option value="hours">Hours</option>
+                    <option value="days">Days</option>
+                  </select>
+                </div>
               )}
             </div>
           </div>
