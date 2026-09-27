@@ -1,0 +1,9 @@
+fastapi==0.141.1
+uvicorn[standard]==0.54.0
+pydantic==2.13.5
+pymongo==4.18.2
+httpx==0.28.1
+APScheduler==3.11.3
+pytz==2026.4
+resend==2.48.0
+python-dotenv==1.2.3
