@@ -40,7 +40,13 @@ export default function ScheduleRow({ schedule, onRefresh, onEdit }: Props) {
     }
   };
 
-  const formatInterval = (seconds: number) => {
+  const formatInterval = () => {
+    const { interval_value: value, interval_unit: unit } = schedule;
+    if (value && unit) {
+      return `${value} ${value === 1 ? unit.slice(0, -1) : unit}`;
+    }
+
+    const seconds = schedule.interval_seconds ?? 60;
     if (seconds < 60) return `${seconds} sec`;
     if (seconds % 60 === 0) return `${seconds / 60} min`;
     return `${seconds} sec`;
@@ -67,7 +73,7 @@ export default function ScheduleRow({ schedule, onRefresh, onEdit }: Props) {
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <span className="text-sm text-zinc-600 dark:text-zinc-400 font-medium">
-          {formatInterval(schedule.interval_seconds)}
+          {formatInterval()}
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
