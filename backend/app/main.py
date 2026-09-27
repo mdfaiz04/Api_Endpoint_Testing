@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.services.scheduler_engine import start_scheduler, load_scheduler_jobs
 from fastapi.middleware.cors import CORSMiddleware
+from app.core.config import CORS_ORIGINS
 
 from app.routes import api_endpoints
 from app.routes import manual_test
@@ -28,7 +29,7 @@ app = FastAPI(
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

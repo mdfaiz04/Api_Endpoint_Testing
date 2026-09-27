@@ -1,8 +1,9 @@
 from pymongo import MongoClient
+from app.core.config import MONGO_URI, DATABASE_NAME
 
 # MongoDB connection setup
-client = MongoClient("mongodb://localhost:27017")
-db = client["api_endpoint_testing"]
+client = MongoClient(MONGO_URI)
+db = client[DATABASE_NAME]
 
 # Collections
 endpoints_collection = db["endpoints"]
