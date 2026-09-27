@@ -107,7 +107,7 @@ export default function DashboardPage() {
       {/* Sidebar - Placeholder / Wrapper since sidebar is declared complete */}
       <aside className={`bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 flex flex-col shrink-0 sticky top-0 h-screen transition-all duration-300 overflow-hidden ${isSidebarOpen ? "w-[260px] border-r" : "w-0 border-r-0"}`}>
         <div className="h-[70px] border-b border-zinc-200 dark:border-zinc-800 flex items-center px-6 transition-colors min-w-[260px]">
-          <span className="text-lg font-bold text-zinc-900 dark:text-white tracking-wider transition-colors">METAWURKS</span>
+          <span className="text-lg font-bold text-zinc-900 dark:text-white tracking-wider transition-colors">API TESTING</span>
         </div>
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto min-w-[260px]">
           <a href="/dashboard" className="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-indigo-600 text-white transition-colors">
