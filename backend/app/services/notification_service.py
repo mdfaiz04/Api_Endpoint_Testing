@@ -38,7 +38,7 @@ def build_failure_email_html(endpoint: dict, validation_result: dict, response_t
                 </tr>
                 <tr>
                     <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">HTTP Status Code</td>
-                    <td style="padding: 8px; border-bottom: 1px solid #eee;">{response_status_code}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">{response_status_code or 'No response'}</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Response Time</td>
