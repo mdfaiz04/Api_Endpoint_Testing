@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from app.services.endpoint_summary_service import get_endpoint_summaries
 
 logger = logging.getLogger(__name__)
@@ -129,7 +129,7 @@ def generate_health_report() -> tuple[str, str]:
             
     avg_response_time = (total_response_time / valid_response_times_count) if valid_response_times_count > 0 else 0.0
     
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     
     subject = build_health_report_subject(healthy_apis, total_apis)
     html = build_health_report_html(
