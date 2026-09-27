@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint
+        run: ruff check --select E9,F63,F7,F82 .
+
+      - name: Test
+        run: pytest -v
+
+  frontend:
+    name: Frontend (type-check & build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+  docker:
+    name: Docker (full-stack smoke test)
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build and start the stack
+        run: docker compose up -d --build --wait --wait-timeout 180
+
+      - name: Smoke test
+        run: |
+          curl -fsS http://127.0.0.1:8000/health
+          curl -fsS -o /dev/null -w "dashboard: HTTP %{http_code}\n" http://127.0.0.1:3000/dashboard
+
+          # Register the API's own health check as a monitored endpoint and run it end to end
+          curl -fsS -X POST http://127.0.0.1:8000/api-endpoints \
+            -H "Content-Type: application/json" \
+            -d '{"name": "self-check", "url": "http://127.0.0.1:8000/health", "method": "GET", "expected_response": {"status": "healthy"}}'
+          curl -fsS "http://127.0.0.1:8000/manual-test?name=self-check" | jq -e '.passed == true'
+          curl -fsS http://127.0.0.1:8000/endpoint-summary | jq -e '.[0].status == "PASS"'
+
+      - name: Show logs
+        if: failure()
+        run: docker compose logs
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
