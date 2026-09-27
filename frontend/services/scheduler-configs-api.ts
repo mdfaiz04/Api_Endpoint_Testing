@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_BASE_URL } from "./config";
 
 export interface SchedulerConfig {
   name: string;
@@ -13,7 +14,6 @@ export interface SchedulerConfig {
   created_at?: string;
 }
 
-const API_BASE_URL = "http://127.0.0.1:8000";
 
 export const getSchedulerConfigs = async (): Promise<SchedulerConfig[]> => {
   const response = await axios.get(`${API_BASE_URL}/scheduler-configs`);

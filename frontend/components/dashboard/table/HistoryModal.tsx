@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "@/services/config";
 
 interface HistoryData {
   timestamp: string;
@@ -19,7 +20,7 @@ export default function HistoryModal({ isOpen, onClose, apiName }: HistoryModalP
   useEffect(() => {
     if (isOpen && apiName) {
       setLoading(true);
-      axios.get(`http://127.0.0.1:8000/status-history/${encodeURIComponent(apiName)}`)
+      axios.get(`${API_BASE_URL}/status-history/${encodeURIComponent(apiName)}`)
         .then(res => {
           // The backend returns it sorted ascending. We want newest first (descending).
           const sortedDesc = res.data.reverse();

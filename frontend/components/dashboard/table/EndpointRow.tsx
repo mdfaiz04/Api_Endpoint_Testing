@@ -2,6 +2,7 @@ import { useState } from "react";
 import { EndpointSummary } from "@/types/endpoint-summary";
 import { deleteEndpoint } from "@/services/endpoints-api";
 import axios from "axios";
+import { API_BASE_URL } from "@/services/config";
 
 import { ToastData } from "@/app/dashboard/page";
 
@@ -41,7 +42,7 @@ export default function EndpointRow({ summary, onRefresh, showNotification, onEd
     try {
       setIsTesting(true);
       const start = performance.now();
-      const response = await axios.get(`http://127.0.0.1:8000/manual-test?name=${encodeURIComponent(summary.name)}`);
+      const response = await axios.get(`${API_BASE_URL}/manual-test?name=${encodeURIComponent(summary.name)}`);
       const end = performance.now();
       
       if (showNotification) {

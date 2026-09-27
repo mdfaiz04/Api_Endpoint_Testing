@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_BASE_URL } from "./config";
 
 export interface NotificationRecipient {
   _id?: string;
@@ -9,21 +10,21 @@ export interface NotificationRecipient {
   updated_at?: string;
 }
 
-const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
+const API_V1_URL = `${API_BASE_URL}/api/v1`;
 
 export const getNotificationRecipients = async (): Promise<NotificationRecipient[]> => {
-  const response = await axios.get(`${API_BASE_URL}/notification-recipients/`);
+  const response = await axios.get(`${API_V1_URL}/notification-recipients/`);
   return response.data;
 };
 
 export const createNotificationRecipient = async (recipient: NotificationRecipient): Promise<void> => {
-  await axios.post(`${API_BASE_URL}/notification-recipients/`, recipient);
+  await axios.post(`${API_V1_URL}/notification-recipients/`, recipient);
 };
 
 export const updateNotificationRecipient = async (id: string, recipient: Partial<NotificationRecipient>): Promise<void> => {
-  await axios.put(`${API_BASE_URL}/notification-recipients/${id}`, recipient);
+  await axios.put(`${API_V1_URL}/notification-recipients/${id}`, recipient);
 };
 
 export const deleteNotificationRecipient = async (id: string): Promise<void> => {
-  await axios.delete(`${API_BASE_URL}/notification-recipients/${id}`);
+  await axios.delete(`${API_V1_URL}/notification-recipients/${id}`);
 };

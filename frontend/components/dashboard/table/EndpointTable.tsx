@@ -11,6 +11,7 @@ import EndpointModal from "./EndpointModal";
 import TrendModal from "./TrendModal";
 import HistoryModal from "./HistoryModal";
 import axios from "axios";
+import { API_BASE_URL } from "@/services/config";
 
 interface Props {
   refreshKey?: number;
@@ -94,7 +95,7 @@ export default function EndpointTable({
     try {
       setIsRunningAll(true);
       const start = performance.now();
-      const response = await axios.get("http://127.0.0.1:8000/manual-test-all");
+      const response = await axios.get(`${API_BASE_URL}/manual-test-all`);
       const end = performance.now();
       
       processBatchResults(response.data, (end - start) / 1000);
@@ -112,7 +113,7 @@ export default function EndpointTable({
     try {
       setIsRunningFailed(true);
       const start = performance.now();
-      const response = await axios.get("http://127.0.0.1:8000/manual-test-failed");
+      const response = await axios.get(`${API_BASE_URL}/manual-test-failed`);
       const end = performance.now();
 
       processBatchResults(response.data, (end - start) / 1000);

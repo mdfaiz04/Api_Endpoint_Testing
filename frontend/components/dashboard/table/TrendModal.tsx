@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import axios from "axios";
+import { API_BASE_URL } from "@/services/config";
 
 interface TrendData {
   timestamp: string;
@@ -20,7 +21,7 @@ export default function TrendModal({ isOpen, onClose, apiName }: TrendModalProps
   useEffect(() => {
     if (isOpen && apiName) {
       setLoading(true);
-      axios.get(`http://127.0.0.1:8000/response-time-history/${encodeURIComponent(apiName)}`)
+      axios.get(`${API_BASE_URL}/response-time-history/${encodeURIComponent(apiName)}`)
         .then(res => {
           const formattedData = res.data.map((d: any) => ({
             ...d,

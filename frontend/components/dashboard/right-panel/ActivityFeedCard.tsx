@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { FaHistory, FaCheckCircle, FaExclamationTriangle, FaTimesCircle } from "react-icons/fa";
 import axios from "axios";
+import { API_BASE_URL } from "@/services/config";
 
 interface RecentActivity {
   api_name: string;
@@ -24,7 +25,7 @@ export default function ActivityFeedCard({ refreshKey = 0, batchLogs = [] }: Pro
   useEffect(() => {
     async function fetchLogs() {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/recent-activities");
+        const response = await axios.get(`${API_BASE_URL}/recent-activities`);
         setLogs(response.data);
       } catch (error) {
         console.error("Failed to fetch logs", error);
