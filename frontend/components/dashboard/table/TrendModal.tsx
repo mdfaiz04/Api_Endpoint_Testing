@@ -53,7 +53,7 @@ export default function TrendModal({ isOpen, onClose, apiName }: TrendModalProps
           ) : (
             <div style={{ width: '100%', height: 350 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" opacity={0.2} />
                   <XAxis dataKey="formattedTime" stroke="#71717a" fontSize={12} tickMargin={10} />
                   <YAxis stroke="#71717a" fontSize={12} tickMargin={10} />
